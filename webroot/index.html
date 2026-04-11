@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Thermal Mode Manager</title>
+        <link rel="stylesheet" href="./index.css" type="text/css" />
+    </head>
+    <body>
+        <div class="header">
+            <div class="title">Thermal Manager</div>
+        </div>
+        <div class="preload-hidden body-content">
+            <!-- Current Mode -->
+            <div class="settings-group-title">Current Mode</div>
+            <div class="settings-group">
+                <div class="current-mode-box">
+                    <div class="current-mode-icon" id="current-mode-icon">?</div>
+                    <div class="current-mode-name" id="current-mode-name">Unknown</div>
+                </div>
+            </div>
+
+            <!-- Mode Selection -->
+            <div class="settings-group-title">Select Mode</div>
+            <div class="settings-group mode-grid">
+                <div class="mode-card" data-mode="0">
+                    <div class="mode-card-icon">⚖️</div>
+                    <div class="mode-card-title">Balanced</div>
+                    <md-ripple></md-ripple>
+                </div>
+                <div class="mode-card" data-mode="1">
+                    <div class="mode-card-icon">🔋</div>
+                    <div class="mode-card-title">Battery</div>
+                    <md-ripple></md-ripple>
+                </div>
+                <div class="mode-card" data-mode="6">
+                    <div class="mode-card-icon">⚡</div>
+                    <div class="mode-card-title">Performance</div>
+                    <md-ripple></md-ripple>
+                </div>
+                <div class="mode-card" data-mode="19">
+                    <div class="mode-card-icon">🎮</div>
+                    <div class="mode-card-title">Gaming</div>
+                    <md-ripple></md-ripple>
+                </div>
+            </div>
+
+            <!-- Status -->
+            <div class="settings-group-title">Status</div>
+            <div class="settings-group">
+                <div class="list-item">
+                    <div class="status-row">
+                        <span>Service</span>
+                        <span id="service-status" class="status-badge">Checking...</span>
+                    </div>
+                    <div class="status-row">
+                        <span>Interface</span>
+                        <span id="interface-status" class="status-badge">Checking...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="settings-group-title">Actions</div>
+            <div class="settings-group">
+                <div class="custom-buttons list-item">
+                    <md-filled-button id="restart-btn">Restart Service</md-filled-button>
+                    <md-filled-button id="refresh-btn">Refresh</md-filled-button>
+                </div>
+            </div>
+        </div>
+
+            <!-- About -->
+            <div class="settings-group-title">About</div>
+            <div class="settings-group">
+                <p style="text-align: center; padding: 16px;">
+                    Created by 
+                    <a style="color: var(--md-sys-color-primary); text-decoration: none; cursor: pointer;" id="github-link">Ahmed Al-Nassif</a>
+                </p>
+            </div>
+
+        <script type="module" src="./index.js"></script>
+    </body>
+</html>
