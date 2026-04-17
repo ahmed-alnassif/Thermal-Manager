@@ -1,15 +1,22 @@
 MODDIR=/data/adb/modules/thermal_mode_manager
 THERMAL_PATH=/sys/class/thermal/thermal_message/sconfig
 CONFIG_FILE=${MODDIR}/current_mode
+CONFIG_SH=${MODDIR}/config.sh
 PID_FILE=${MODDIR}/service.pid
 
 # Default mode
 config_thermal_mode=0
+config_auto_battery_saver=0
+. ${CONFIG_SH} 2>/dev/null
 
 # Wait for thermal interface
 until [ -f ${THERMAL_PATH} ]; do
     sleep 5
 done
+
+is_screen_on() {
+    dumpsys power 2>/dev/null | grep -q "mWakefulness=Awake" && echo "1" || echo "0"
+}
 
 # Function to apply mode
 apply_mode() {
@@ -38,6 +45,8 @@ get_mode_name() {
 # Monitor and maintain mode
 monitor_mode() {
     while true; do
+        . ${CONFIG_SH} 2>/dev/null
+        
         if [ -f ${CONFIG_FILE} ]; then
             TARGET=$(cat ${CONFIG_FILE})
         else
@@ -45,10 +54,13 @@ monitor_mode() {
             echo ${TARGET} > ${CONFIG_FILE}
         fi
         
-        CURRENT=$(get_mode)
-        
-        if [ "${CURRENT}" != "${TARGET}" ]; then
-            apply_mode ${TARGET}
+        if [ ${config_auto_battery_saver:-0} -eq 1 ] && [ "$(is_screen_on)" = "0" ]; then
+            apply_mode 1
+        else
+            CURRENT=$(get_mode)
+            if [ "${CURRENT}" != "${TARGET}" ]; then
+                apply_mode ${TARGET}
+            fi
         fi
         
         sleep 1
