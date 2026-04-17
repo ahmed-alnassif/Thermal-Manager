@@ -5,12 +5,45 @@ document.querySelector('.preload-hidden').classList.remove('preload-hidden')
 
 const MODDIR = '/data/adb/modules/thermal_mode_manager'
 const THERMAL_PATH = '/sys/class/thermal/thermal_message/sconfig'
+const CONFIG_FILE = `${MODDIR}/config.sh`
 
 const MODES = {
     '0': { name: 'Balanced', icon: '⚖️' },
     '1': { name: 'Battery', icon: '🔋' },
     '6': { name: 'Performance', icon: '⚡' },
     '19': { name: 'Gaming', icon: '🎮' }
+}
+
+// Function to read config
+async function readConfig() {
+    const result = await exec(`cat ${CONFIG_FILE} 2>/dev/null`)
+    const config = {}
+    if (result.stdout) {
+        result.stdout.split('\n').forEach(line => {
+            if (line.includes('=')) {
+                const [key, value] = line.split('=')
+                config[key.trim()] = value.trim()
+            }
+        })
+    }
+    return config
+}
+
+// Function to write config
+async function writeConfig(key, value) {
+    await exec(`sed -i '/^${key}=/d' ${CONFIG_FILE} 2>/dev/null`)
+    await exec(`echo '${key}=${value}' >> ${CONFIG_FILE}`)
+}
+
+// Function to get config value
+async function getConfigValue(key, defaultValue = '0') {
+    const config = await readConfig()
+    return config[key] || defaultValue
+}
+
+// Function to set config value
+async function setConfigValue(key, value) {
+    await writeConfig(key, value)
 }
 
 async function updateStatus() {
@@ -104,3 +137,19 @@ window.addEventListener('back', () => {
 document.getElementById('github-link').addEventListener('click', async () => {
     await exec('am start -a android.intent.action.VIEW -d "https://github.com/ahmed-alnassif"');
 })
+
+// Load auto mode config
+async function loadAutoBatterySaver() {
+    const enabled = await getConfigValue('config_auto_battery_saver', '0')
+    document.getElementById('auto_battery_saver').selected = enabled === '1'
+}
+
+// Auto battery saver toggle
+document.getElementById('auto_battery_saver').addEventListener('change', async (e) => {
+    const enabled = e.target.selected ? '1' : '0'
+    await setConfigValue('config_auto_battery_saver', enabled)
+    toast(enabled === '1' ? '✅ Auto battery saver enabled' : '🔋 Auto battery saver disabled')
+})
+
+// Load on init
+loadAutoBatterySaver()
