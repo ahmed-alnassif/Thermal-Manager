@@ -7,6 +7,7 @@ This module fixes the thermal mode/profile reset issue on Poco X6 Pro. Normally,
 - 🔋 Battery Saver
 - ⚡ Performance
 - 🎮 Gaming
+- 🌙 Auto Battery Saver when screen off (toggle in WebUI)
 - WebUI for easy switching
 - Persistent mode after reboot
 - Background service monitoring
