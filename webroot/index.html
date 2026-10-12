@@ -1,98 +1,171 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" dir="ltr">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Thermal Mode Manager</title>
+        <title>ThermalCore</title>
         <link rel="stylesheet" href="./index.css" type="text/css" />
     </head>
     <body>
-        <div class="header">
-            <div class="title">Thermal Manager</div>
-        </div>
-        <div class="preload-hidden body-content">
-            <!-- Current Mode -->
-            <div class="settings-group-title">Current Mode</div>
-            <div class="settings-group">
-                <div class="current-mode-box">
-                    <div class="current-mode-icon" id="current-mode-icon">?</div>
-                    <div class="current-mode-name" id="current-mode-name">Unknown</div>
+        <header class="topbar">
+            <div class="brand">
+                <div class="brand-mark" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v9.1a5 5 0 1 0 6 0V5a3 3 0 0 0-3-3Zm0 18a3 3 0 0 1-1.5-5.6l.5-.3V5a1 1 0 1 1 2 0v9.1l.5.3A3 3 0 0 1 12 20Z"/></svg>
+                </div>
+                <div>
+                    <div class="brand-name">Thermal<span>Core</span></div>
+                    <div class="brand-sub" dir="ltr" id="brand-sub">Performance &amp; thermal manager</div>
                 </div>
             </div>
+            <div class="dropdown compact" id="dd-lang"></div>
+        </header>
 
-            <!-- Mode Selection -->
-            <div class="settings-group-title">Select Mode</div>
-            <div class="settings-group mode-grid">
-                <div class="mode-card" data-mode="0">
-                    <div class="mode-card-icon">⚖️</div>
-                    <div class="mode-card-title">Balanced</div>
-                    <md-ripple></md-ripple>
-                </div>
-                <div class="mode-card" data-mode="1">
-                    <div class="mode-card-icon">🔋</div>
-                    <div class="mode-card-title">Battery</div>
-                    <md-ripple></md-ripple>
-                </div>
-                <div class="mode-card" data-mode="6">
-                    <div class="mode-card-icon">⚡</div>
-                    <div class="mode-card-title">Performance</div>
-                    <md-ripple></md-ripple>
-                </div>
-                <div class="mode-card" data-mode="19">
-                    <div class="mode-card-icon">🎮</div>
-                    <div class="mode-card-title">Gaming</div>
-                    <md-ripple></md-ripple>
-                </div>
-            </div>
-
-            <!-- Status -->
-            <div class="settings-group-title">Status</div>
-            <div class="settings-group">
-                <div class="list-item">
-                    <div class="status-row">
-                        <span>Service</span>
-                        <span id="service-status" class="status-badge">Checking...</span>
-                    </div>
-                    <div class="status-row">
-                        <span>Interface</span>
-                        <span id="interface-status" class="status-badge">Checking...</span>
+        <main class="content">
+            <!-- Live status -->
+            <section class="hero" id="hero">
+                <div class="hero-main">
+                    <div class="hero-icon" id="hero-icon">⚖️</div>
+                    <div class="hero-text">
+                        <div class="hero-label" data-i18n="activeProfile">Active profile</div>
+                        <div class="hero-name" id="hero-name">—</div>
+                        <div class="chips">
+                            <span class="chip" id="chip-source">—</span>
+                            <span class="chip" id="chip-service">—</span>
+                        </div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Auto Mode Section -->
-            <div class="settings-group-title">Auto Mode</div>
-            <div class="settings-group">
-                <div class="list-item">
-                    <label class="toggle-option">
-                        Battery Saver when screen off
-                        <md-switch icons id="auto_battery_saver"></md-switch>
-                    </label>
-                    <div class="toggle-option-content">
-                        <div class="toggle-info">Automatically switch to Battery Saver mode when screen is off</div>
+                <div class="temp">
+                    <div class="temp-row">
+                        <span data-i18n="socTemp">SoC temperature</span>
+                        <span dir="ltr"><b id="temp-now">--</b>°C <span class="muted">/ <span id="temp-limit">--</span>°C</span></span>
                     </div>
-                    <md-ripple></md-ripple>
+                    <div class="temp-bar"><div class="temp-fill" id="temp-fill"></div></div>
+                    <div class="temp-row batt-row">
+                        <span data-i18n="battTemp">Battery temperature</span>
+                        <span dir="ltr"><b id="batt-now">--</b>°C</span>
+                    </div>
+                    <div class="temp-note" id="temp-note" hidden></div>
                 </div>
-            </div>
+            </section>
 
-            <!-- Actions -->
-            <div class="settings-group-title">Actions</div>
-            <div class="settings-group">
-                <div class="custom-buttons list-item">
-                    <md-filled-button id="restart-btn">Restart Service</md-filled-button>
-                    <md-filled-button id="refresh-btn">Refresh</md-filled-button>
+            <!-- Profiles -->
+            <section class="tab" id="tab-profiles">
+                <h2 class="section-title" data-i18n="chooseProfile">Choose a profile</h2>
+                <div class="profile-grid" id="profile-grid"></div>
+                <p class="hint" data-i18n="profileHint">Games in your list switch to their own profile automatically.</p>
+            </section>
+
+            <!-- Games -->
+            <section class="tab" id="tab-games" hidden>
+                <div class="card">
+                    <div class="row">
+                        <div class="row-text">
+                            <div class="row-title" data-i18n="autoGame">Auto game mode</div>
+                            <div class="row-sub" data-i18n="autoGameSub">Switch profile when a game from the list is open</div>
+                        </div>
+                        <label class="switch"><input type="checkbox" id="sw-auto-game" /><span></span></label>
+                    </div>
+                    <div class="row">
+                        <div class="row-text">
+                            <div class="row-title" data-i18n="defaultGameProfile">Default game profile</div>
+                            <div class="row-sub" data-i18n="defaultGameProfileSub">Used for games without their own profile</div>
+                        </div>
+                        <div class="dropdown" id="dd-game-mode"></div>
+                    </div>
                 </div>
-            </div>
-        </div>
 
-            <!-- About -->
-            <div class="settings-group-title">About</div>
-            <div class="settings-group">
-                <p style="text-align: center; padding: 16px;">
-                    Created by 
-                    <a style="color: var(--md-sys-color-primary); text-decoration: none; cursor: pointer;" id="github-link">Ahmed Al-Nassif</a>
-                </p>
-            </div>
+                <div class="toolbar">
+                    <div class="search">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4a6 6 0 1 0 3.7 10.7l4.8 4.8 1.4-1.4-4.8-4.8A6 6 0 0 0 10 4Zm0 2a4 4 0 1 1 0 8 4 4 0 0 1 0-8Z"/></svg>
+                        <input type="search" id="app-search" data-i18n-ph="search" placeholder="Search apps…" />
+                    </div>
+                    <div class="dropdown" id="dd-filter"></div>
+                </div>
+                <div class="counter" id="games-counter"></div>
+                <div class="app-list" id="app-list">
+                    <div class="empty" data-i18n="loadingApps">Loading apps…</div>
+                </div>
+            </section>
+
+            <!-- Settings -->
+            <section class="tab" id="tab-settings" hidden>
+                <details class="menu" open>
+                    <summary><span class="menu-icon">🤖</span><span data-i18n="automation">Automation</span></summary>
+                    <div class="menu-body">
+                        <div class="row">
+                            <div class="row-text">
+                                <div class="row-title" data-i18n="autoBattery">Battery Saver when screen is off</div>
+                                <div class="row-sub" data-i18n="autoBatterySub">Returns to your profile when you unlock</div>
+                            </div>
+                            <label class="switch"><input type="checkbox" id="sw-auto-battery" /><span></span></label>
+                        </div>
+                        <div class="row">
+                            <div class="row-text">
+                                <div class="row-title" data-i18n="notify">Status notification</div>
+                                <div class="row-sub" data-i18n="notifySub">Always shows the active profile, CPU and battery temperature</div>
+                            </div>
+                            <label class="switch"><input type="checkbox" id="sw-notify" /><span></span></label>
+                        </div>
+                    </div>
+                </details>
+
+                <details class="menu" open>
+                    <summary><span class="menu-icon">🌡️</span><span data-i18n="thermalGuard">Thermal guard</span></summary>
+                    <div class="menu-body">
+                        <div class="row">
+                            <div class="row-text">
+                                <div class="row-title" data-i18n="tempLimit">Temperature limit</div>
+                                <div class="row-sub" data-i18n="tempLimitSub">Gaming / Performance boost pauses above this and resumes 7°C lower</div>
+                            </div>
+                            <div class="dropdown" id="dd-temp"></div>
+                        </div>
+                        <div class="note warn" id="temp-warn" hidden data-i18n="tempWarn">Higher limits mean longer boost but a hotter device. Android's own thermal protection always stays on.</div>
+                    </div>
+                </details>
+
+                <details class="menu">
+                    <summary><span class="menu-icon">⚙️</span><span data-i18n="service">Service</span></summary>
+                    <div class="menu-body">
+                        <div class="kv"><span data-i18n="status">Status</span><span id="svc-status">—</span></div>
+                        <div class="kv"><span>PID</span><span id="svc-pid">—</span></div>
+                        <div class="kv"><span data-i18n="platform">Platform</span><span id="svc-platform">—</span></div>
+                        <div class="btn-row">
+                            <button class="btn" id="btn-restart" data-i18n="restart">Restart service</button>
+                            <button class="btn ghost" id="btn-log" data-i18n="showLog">Show log</button>
+                            <button class="btn ghost" id="btn-sensors" data-i18n="sensors">Sensors</button>
+                        </div>
+                        <pre class="log" id="log" hidden></pre>
+                    </div>
+                </details>
+
+                <details class="menu">
+                    <summary><span class="menu-icon">ℹ️</span><span data-i18n="about">About</span></summary>
+                    <div class="menu-body about">
+                        <p><b>ThermalCore</b> <span id="about-version"></span></p>
+                        <p data-i18n="aboutBy">Developed and maintained by <b>ifoknr</b></p>
+                        <p class="muted" data-i18n="credits">Based on Thermal Manager by Ahmed Al-Nassif. Game list from Licking Thermal by STAN (Apache-2.0).</p>
+                        <button class="btn ghost" id="btn-github">GitHub</button>
+                    </div>
+                </details>
+            </section>
+        </main>
+
+        <nav class="bottom-nav">
+            <button class="nav-btn active" data-tab="profiles">
+                <svg viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z"/></svg>
+                <span data-i18n="tabProfiles">Profiles</span>
+            </button>
+            <button class="nav-btn" data-tab="games">
+                <svg viewBox="0 0 24 24"><path d="M7 6h10a5 5 0 0 1 4.9 6l-.9 4.4a2.5 2.5 0 0 1-4.3 1.1L14.4 15H9.6l-2.3 2.5A2.5 2.5 0 0 1 3 16.4L2.1 12A5 5 0 0 1 7 6Zm1 3v2H6v2h2v2h2v-2h2v-2h-2V9H8Zm8.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Z"/></svg>
+                <span data-i18n="tabGames">Games</span>
+            </button>
+            <button class="nav-btn" data-tab="settings">
+                <svg viewBox="0 0 24 24"><path d="m19.4 13 .1-1-.1-1 2.1-1.6-2-3.4-2.5 1a7 7 0 0 0-1.7-1L15 3.5h-4L10.7 6a7 7 0 0 0-1.7 1l-2.5-1-2 3.4L6.6 11l-.1 1 .1 1-2.1 1.6 2 3.4 2.5-1c.5.4 1.1.7 1.7 1l.3 2.5h4l.3-2.5c.6-.3 1.2-.6 1.7-1l2.5 1 2-3.4-2.1-1.6ZM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7Z" transform="translate(-1 0)"/></svg>
+                <span data-i18n="tabSettings">Settings</span>
+            </button>
+        </nav>
+
+        <div class="toast" id="toast" role="status"></div>
 
         <script type="module" src="./index.js"></script>
     </body>

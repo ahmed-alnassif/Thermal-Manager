@@ -1,0 +1,9 @@
+ThermalCore
+Copyright (C) 2026 ifoknr — licensed under the GNU GPL v3.0 (see LICENSE).
+
+Based on Thermal Manager by Ahmed Al-Nassif (https://github.com/ahmed-alnassif).
+
+games_default.txt is derived from other/list.txt of Licking Thermal
+(https://github.com/fuckyoustan/Licking-Thermal), Copyright STAN,
+licensed under the Apache License, Version 2.0
+(http://www.apache.org/licenses/LICENSE-2.0). Changes: sorted and de-duplicated.

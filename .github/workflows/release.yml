@@ -1,0 +1,70 @@
+name: Build & Release Flashable Zip
+
+on:
+  workflow_dispatch: # يتيح تشغيل البناء يدوياً بنقرة زر واحدة
+  push:
+    tags:
+      - 'v*' # يعمل تلقائياً عند إنشاء Tag مثل v2.0
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Package Module Zip
+        id: package
+        run: |
+          # استخراج رقم الإصدار من ملف module.prop
+          VERSION=$(grep '^version=' module.prop | cut -d= -f2 | tr -d '\r')
+          [ -z "$VERSION" ] && VERSION="v2.0"
+          ZIP_NAME="ThermalCore-${VERSION}.zip"
+
+          # ضغط الملفات من الجذر مباشرة لضمان قبول التفليش في KernelSU/Magisk
+          zip -r9 "$ZIP_NAME" META-INF customize.sh uninstall.sh module.prop service.sh update-desc.sh games_default.txt webroot -x "*.git*" "*.github*" "README.md" "LICENSE"
+
+          echo "zip_name=$ZIP_NAME" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Sanity checks (immutable releases cannot be fixed after publishing)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.package.outputs.version }}
+        run: |
+          # On a tag push the tag must match the version inside module.prop
+          if [ "$GITHUB_REF_TYPE" = "tag" ] && [ "$GITHUB_REF_NAME" != "$VERSION" ]; then
+            echo "::error::Tag '$GITHUB_REF_NAME' does not match module.prop version '$VERSION'. Update module.prop and push a new tag."
+            exit 1
+          fi
+          # A published release can never be changed or reused: stop before touching it
+          IS_DRAFT=$(gh release view "$VERSION" --repo "$GITHUB_REPOSITORY" --json isDraft -q .isDraft 2>/dev/null || echo "none")
+          if [ "$IS_DRAFT" = "false" ]; then
+            echo "::error::Release '$VERSION' is already published (immutable). Bump 'version' and 'versionCode' in module.prop and use a new tag."
+            exit 1
+          fi
+
+      - name: Publish to GitHub Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.package.outputs.version }}
+          name: "ThermalCore ${{ steps.package.outputs.version }}"
+          body: |
+            ### 🚀 ThermalCore (Galaxy Tab S10 Ultra)
+            - Optimized for Samsung Galaxy Tab S10 Ultra (MediaTek Dimensity 9300+).
+            - Auto game mode with per-game profiles and a thermal guard.
+            - Custom profiles: Battery, Balanced, Performance, and Gaming.
+            
+            **Flash via KernelSU / APatch / Magisk.**
+          files: ${{ steps.package.outputs.zip_name }}
+          fail_on_unmatched_files: true
+          # Immutable releases: never overwrite assets (the default is true and
+          # tries to delete the old asset, which GitHub rejects).
+          overwrite_files: false
+          # Create as a draft, check the zip, then press "Publish" manually.
+          # Published releases can no longer be edited.
+          draft: true
+          prerelease: false

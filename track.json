@@ -1,0 +1,9 @@
+{
+  "id": "thermalcore",
+  "enable": true,
+  "update_to": "update.json",
+  "source": "https://github.com/ifoknr/IFOKNR-THEMAL-MANAGER",
+  "support": "https://github.com/ifoknr/IFOKNR-THEMAL-MANAGER/issues",
+  "license": "GPL-3.0",
+  "antifeatures": []
+}
